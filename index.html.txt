@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integración BUK → RSA → AD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .presentation-container {
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .slide {
+            display: none;
+            padding: 60px;
+            min-height: 700px;
+            position: relative;
+        }
+
+        .slide.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .slide-header h1 {
+            font-size: 2.5em;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .slide-header p {
+            font-size: 1.2em;
+            color: #718096;
+        }
+
+        /* Slide 1 - Portada */
+        .cover-slide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .cover-slide h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .cover-slide p {
+            font-size: 1.5em;
+            opacity: 0.9;
+        }
+
+        .cover-slide .subtitle {
+            margin-top: 40px;
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+
+        /* Slide 2 - Visión General */
+        .flow-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0;
+        }
+
+        .system-box {
+            flex: 1;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .system-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .system-box.buk {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 3px solid #2196f3;
+        }
+
+        .system-box.rsa {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 3px solid #ff9800;
+        }
+
+        .system-box.ad {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border: 3px solid #9c27b0;
+        }
+
+        .system-box h3 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .system-box p {
+            font-size: 1.1em;
+            color: #424242;
+            line-height: 1.6;
+        }
+
+        .arrow {
+            font-size: 3em;
+            color: #667eea;
+            margin: 0 20px;
+        }
+
+        /* Slide 3 - BUK Detalle */
+        .detail-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .detail-box {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 5px solid #2196f3;
+        }
+
+        .detail-box h3 {
+            color: #2196f3;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .detail-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .detail-box li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 1.1em;
+        }
+
+        .detail-box li:last-child {
+            border-bottom: none;
+        }
+
+        .detail-box li strong {
+            color: #424242;
+        }
+
+        /* Slide 4 - RSA Detalle */
+        .rsa-functions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .function-card {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #ff9800;
+            transition: transform 0.3s;
+        }
+
+        .function-card:hover {
+            transform: scale(1.05);
+        }
+
+        .function-card h4 {
+            color: #e65100;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .function-card p {
+            color: #424242;
+            line-height: 1.6;
+        }
+
+        /* Slide 5 - Flujo Completo */
+        .complete-flow {
+            margin-top: 30px;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+        }
+
+        .flow-step .step-number {
+            width: 50px;
+            height: 50px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .flow-step .step-content h4 {
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 1.3em;
+        }
+
+        .flow-step .step-content p {
+            color: #718096;
+            line-height: 1.6;
+        }
+
+        /* Slide 6 - Beneficios */
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .benefit-card {
+            background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #4caf50;
+        }
+
+        .benefit-card h4 {
+            color: #1b5e20;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .benefit-card h4::before {
+            content: '✓';
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #4caf50;
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+            text-align: center;
+            line-height: 30px;
+        }
+
+        .benefit-card p {
+            color: #2e7d32;
+            line-height: 1.6;
+        }
+
+        /* Navegación */
+        .navigation {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .nav-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .slide-counter {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .api-methods {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .method-badge {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .method-badge.get { background: #2196f3; }
+        .method-badge.post { background: #4caf50; }
+        .method-badge.put { background: #ff9800; }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1: Portada -->
+        <div class="slide active cover-slide">
+            <img src="assets/akti-logo.png" alt="AKTI Logo" style="width: 250px; margin-bottom: 30px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">
+            <div style="background: rgba(255,255,255,0.15); padding: 30px 50px; border-radius: 15px; backdrop-filter: blur(10px);">
+                <h1>🔄 Integración de Sistemas</h1>
+                <p style="font-size: 1.3em; margin-top: 15px;">BUK → RSA Governance & Lifecycle → Active Directory</p>
+            </div>
+            <div class="subtitle">Automatización del Ciclo de Vida de Usuarios</div>
+        </div>
+
+        <!-- Slide 2: Visión General -->
+        <div class="slide">
+            <div class="slide-counter">Slide 2 de 6</div>
+            <div class="slide-header">
+                <h1>📊 Visión General del Flujo</h1>
+                <p>Arquitectura de integración de tres capas</p>
+            </div>
+            <div class="flow-diagram">
+                <div class="system-box buk">
+                    <h3>🏢 BUK</h3>
+                    <p><strong>Sistema Maestro RRHH</strong></p>
+                    <p>Origen de datos de empleados (Multi-X)</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="system-box rsa">
+                    <h3>🎯 RSA G&L</h3>
+                    <p><strong>Middleware de Gobierno</strong></p>
+                    <p>Orquestación y lógica de negocio</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="system-box ad">
+                    <h3>🖥️ Active Directory</h3>
+                    <p><strong>Sistema de Destino</strong></p>
+                    <p>Provisión final de usuarios</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: BUK Detalle -->
+        <div class="slide">
+            <div class="slide-counter">Slide 3 de 6</div>
+            <div class="slide-header">
+                <h1>🏢 BUK - Sistema de RRHH</h1>
+                <p>Sistema maestro de información de empleados</p>
+            </div>
+            <div class="detail-content">
+                <div class="detail-box">
+                    <h3>📋 Atributos de Usuario</h3>
+                    <ul>
+                        <li><strong>email:</strong> Correo electrónico</li>
+                        <li><strong>name:</strong> Nombre completo</li>
+                        <li><strong>person_id:</strong> Identificador único</li>
+                        <li><strong>activated:</strong> Estado activo/inactivo</li>
+                        <li><strong>permission_role_id:</strong> Rol/Perfil</li>
+                        <li><strong>area_ids:</strong> Áreas organizacionales</li>
+                    </ul>
+                </div>
+                <div class="detail-box">
+                    <h3>🔌 API REST</h3>
+                    <ul>
+                        <li><strong>Autenticación:</strong> Token (auth_token)</li>
+                        <li><strong>Protocolo:</strong> REST API</li>
+                    </ul>
+                    <div class="api-methods">
+                        <span class="method-badge get">GET</span>
+                        <span class="method-badge post">POST</span>
+                        <span class="method-badge put">PUT</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: RSA Detalle -->
+        <div class="slide">
+            <div class="slide-counter">Slide 4 de 6</div>
+            <div class="slide-header">
+                <h1>🎯 RSA Governance & Lifecycle</h1>
+                <p>Middleware de orquestación y gobierno</p>
+            </div>
+            <div class="rsa-functions">
+                <div class="function-card">
+                    <h4>📥 GET /users</h4>
+                    <p>Consulta y sincronización de usuarios existentes desde BUK</p>
+                </div>
+                <div class="function-card">
+                    <h4>➕ POST /users(id)</h4>
+                    <p>Creación de nuevos usuarios con person_id único</p>
+                </div>
+                <div class="function-card">
+                    <h4>✏️ PUT /users(id)</h4>
+                    <p>Modificación de atributos de usuarios existentes</p>
+                </div>
+                <div class="function-card">
+                    <h4>🔍 GET activated=false</h4>
+                    <p>Detección de usuarios que deben darse de baja</p>
+                </div>
+            </div>
+            <div style="margin-top: 40px; padding: 25px; background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 12px; text-align: center;">
+                <h3 style="color: #e65100; margin-bottom: 10px;">⚙️ Lógica de Negocio</h3>
+                <p style="color: #424242; font-size: 1.1em;">Validación, enriquecimiento de datos y workflows de sincronización</p>
+            </div>
+        </div>
+
+        <!-- Slide 5: Flujo Completo -->
+        <div class="slide">
+            <div class="slide-counter">Slide 5 de 6</div>
+            <div class="slide-header">
+                <h1>🔄 Flujo Completo de Integración</h1>
+                <p>Proceso paso a paso</p>
+            </div>
+            <div class="complete-flow">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>📋 Cambio en BUK</h4>
+                        <p>Se actualiza información del usuario en el sistema de RRHH (alta, modificación, baja)</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>🔌 Llamada API</h4>
+                        <p>BUK expone los datos mediante REST API con autenticación por token</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>🎯 RSA Procesa</h4>
+                        <p>RSA consume los datos, valida y aplica la lógica de negocio y workflows</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>🔀 Decisión de Acción</h4>
+                        <p>RSA determina: Crear, Actualizar o Desactivar usuario</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>🖥️ Provisión en AD</h4>
+                        <p>Active Directory ejecuta la acción: crea cuenta, actualiza atributos o desactiva usuario</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Beneficios -->
+        <div class="slide">
+            <div class="slide-counter">Slide 6 de 6</div>
+            <div class="slide-header">
+                <h1>🛡️ Beneficios de la Integración</h1>
+                <p>Valor agregado al negocio</p>
+            </div>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <h4>Seguridad Mejorada</h4>
+                    <p>Usuarios dados de baja pierden acceso inmediatamente, eliminando riesgos de seguridad</p>
+                </div>
+                <div class="benefit-card">
+                    <h4>Automatización Completa</h4>
+                    <p>Proceso de onboarding y offboarding totalmente automatizado sin intervención manual</p>
+                </div>
+                <div class="benefit-card">
+                    <h4>Trazabilidad y Auditoría</h4>
+                    <p>Registro completo de cambios para cumplimiento normativo y auditorías de seguridad</p>
+                </div>
+                <div class="benefit-card">
+                    <h4>Reducción de Carga TI</h4>
+                    <p>Disminución significativa del trabajo manual y errores humanos en gestión de usuarios</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navegación -->
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Siguiente →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+            
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Navegación con teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Inicializar
+        showSlide(0);
+    </script>
+</body>
+</html>
